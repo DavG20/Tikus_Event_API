@@ -17,3 +17,5 @@ func NewAuthService(authRepo authrepo.AuthRepo) AuthService {
 func (authService *AuthService) CreateUser(user *authmodel.AuthModel) *authmodel.DBResponse {
 	return authService.AuthRepo.CreateUser(user)
 }
+
+func(authService *AuthService) Login(email, password string){}
