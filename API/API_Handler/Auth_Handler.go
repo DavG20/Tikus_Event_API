@@ -1,6 +1,7 @@
 package apihandler
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -10,21 +11,50 @@ import (
 )
 
 type AuthHandler struct {
-	AuthService authservice.AuthService
+	authService authservice.AuthService
 }
 
 func NewauthHandler(authService authservice.AuthService) AuthHandler {
 	return AuthHandler{
-		AuthService: authService,
+		authService: authService,
 	}
 }
 
 func (authHandler *AuthHandler) CreateUserHandler(context *gin.Context) {
+	userInput := authmodel.UserInput{}
+	if err := context.ShouldBind(&userInput); err != nil {
+		fmt.Println("eror in binding")
+		context.JSON(http.StatusBadRequest, gin.H{"error": "some inputs are already exist in our db"})
+		return
 
-	user := authmodel.AuthModel{}
-	context.BindJSON(&user)
-	dbresponse := authHandler.AuthService.CreateUser(&user)
+	}
+	fmt.Println(userInput)
+	context.BindJSON(&userInput)
+
+	_, isExist := authHandler.authService.FindUserByUserName(userInput.UserName)
+	if isExist {
+		context.JSON(http.StatusBadRequest, gin.H{"error": "User already registred"})
+		return
+	}
+
+	dbresponse, err := authHandler.authService.CreateUser(&userInput)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{"error": errors.New("internal server error")})
+		return
+	}
 	fmt.Println(dbresponse)
 	context.JSON(http.StatusOK, dbresponse)
 
+}
+
+func (authHandler *AuthHandler) Checkuser(cxt *gin.Context) {
+	input := struct {
+		Username string `json:"user_name"`
+	}{}
+	cxt.BindJSON(&input)
+	user, stat := authHandler.authService.FindUserByUserName(input.Username)
+	if !stat {
+		cxt.JSON(http.StatusExpectationFailed, "failed")
+	}
+	cxt.JSON(http.StatusOK, user)
 }

@@ -14,8 +14,18 @@ func NewAuthService(authRepo authrepo.AuthRepo) AuthService {
 		AuthRepo: authRepo,
 	}
 }
-func (authService *AuthService) CreateUser(user *authmodel.AuthModel) *authmodel.DBResponse {
+func (authService *AuthService) CreateUser(user *authmodel.UserInput) (*authmodel.DBResponse, error) {
 	return authService.AuthRepo.CreateUser(user)
 }
 
-func(authService *AuthService) Login(email, password string){}
+func (authService *AuthService) FindUserByUserName(userName string) (user *authmodel.AuthModel, state bool) {
+	user, err := authService.AuthRepo.FindUserByUserName(userName)
+	if err != nil {
+		return nil, false
+	}
+	if user == nil {
+		return nil, false
+	}
+	return user, true
+
+}

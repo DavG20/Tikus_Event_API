@@ -45,5 +45,6 @@ func main() {
 	router = gin.Default()
 
 	router.GET("/", authHandler.CreateUserHandler)
+	router.GET("/check", authHandler.Checkuser)
 	router.Run(":9090")
 }
