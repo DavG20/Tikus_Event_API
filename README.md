@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 Event posting and registering app
 
  • Users Login and Create their profile
@@ -8,3 +9,9 @@ Event posting and registering app
 
 Tikus events Front-End:
 https://github.com/DavG20/Tikus_Event
+=======
+# Tikus_Event_API
+
+#->Event Sharing app using golang as a back-end and flutter as front-end
+#->User can register, create,share,and subscribe for an event 
+>>>>>>> 84da6b2980f0c2ae98b4a8c9600826a4feb87ee1
