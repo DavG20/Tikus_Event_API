@@ -21,6 +21,8 @@ func NewCookieHandler() *CookieHandler {
 	return &CookieHandler{}
 }
 
+// get cookis from session object
+// session object has username and jwtstandar's
 func (cookieHandler *CookieHandler) CreateCookie(session *Session) (cookie *http.Cookie, err error) {
 	expirationTime := time.Now().Add(2400 * time.Hour)
 
