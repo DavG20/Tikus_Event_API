@@ -6,6 +6,7 @@ import (
 	"sync"
 
 	api_handler "github.com/DavG20/Tikus_Event_Api/API/API_Handler"
+	authmodel "github.com/DavG20/Tikus_Event_Api/Internal/pkg/auth/Auth_Model"
 	authrepo "github.com/DavG20/Tikus_Event_Api/Internal/pkg/auth/Auth_Repo"
 	authservice "github.com/DavG20/Tikus_Event_Api/Internal/pkg/auth/Auth_Service"
 	DB "github.com/DavG20/Tikus_Event_Api/Internal/pkg/db"
@@ -18,6 +19,8 @@ var Db *gorm.DB
 var err error
 var once sync.Once
 var router *gin.Engine
+
+var users []authmodel.AuthModel
 
 func StartUp() {
 	once.Do(
@@ -44,7 +47,10 @@ func main() {
 
 	router = gin.Default()
 
-	router.GET("/", authHandler.CreateUserHandler)
+	// res := Db.Table(constants.UserTableName).Where("admin=?", false).Delete(users)
+	// fmt.Println("deleted", res.RowsAffected)
+
+	router.POST("/", authHandler.CreateUserHandler)
 	router.GET("/check", authHandler.Checkuser)
-	router.Run(":9090")
+	router.Run(":8080")
 }

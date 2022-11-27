@@ -23,9 +23,17 @@ func (authService *AuthService) FindUserByUserName(userName string) (user *authm
 	if err != nil {
 		return nil, false
 	}
-	if user == nil {
+	// if user == nil {
+	// 	return nil, false
+	// }
+	return user, true
+
+}
+
+func (authService *AuthService) FindUserByEmail(email string) (*authmodel.AuthModel, bool) {
+	user, err := authService.AuthRepo.FindUserByEmail(email)
+	if err != nil {
 		return nil, false
 	}
 	return user, true
-
 }

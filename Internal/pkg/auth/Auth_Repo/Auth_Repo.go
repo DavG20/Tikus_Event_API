@@ -24,7 +24,7 @@ func (authRepo *AuthRepo) CreateUser(userInput *authmodel.UserInput) (dbResponse
 		UserName:   userInput.UserName,
 		Email:      userInput.Email,
 		Password:   userInput.Password,
-		CreatedOn:  time.Now(),
+		CreatedOn:  time.Now().Format("2006-01-02 15:04:05.12"),
 		ProfileUrl: userInput.ProfileUrl,
 	}
 	fmt.Println(user)
@@ -32,9 +32,9 @@ func (authRepo *AuthRepo) CreateUser(userInput *authmodel.UserInput) (dbResponse
 	if user == nil {
 		return nil, errors.New("invalid user input to decode user")
 	}
-    
-	res := authRepo.DB.Table(constants.UserTableName).Create(user)
-	if res.Error != nil {
+
+	err = authRepo.DB.Table(constants.UserTableName).Create(user).Error
+	if err != nil {
 		fmt.Println("error in create method repo , line 38")
 		return nil, errors.New("Invalid input")
 	}
@@ -67,14 +67,21 @@ func (authRepo *AuthRepo) GetDbResponse(user *authmodel.AuthModel) (dbResponse *
 
 func (authRepo *AuthRepo) FindUserByUserName(userName string) (user *authmodel.AuthModel, err error) {
 	// res:=authRepo.DB.Table(constants.UserTableName).Raw("select * from user_tikus_event where user_name=? ",userName).Find(&user)
-	err = authRepo.DB.Table(constants.UserTableName).Where("user_name=?", userName).First(&user).Error
+	err = authRepo.DB.Table(constants.UserTableName).Where(authmodel.AuthModel{UserName: userName}).First(&user).Error
 	if err != nil {
-		fmt.Println("error during search by username")
 		return nil, err
 	}
-	if user == nil {
-		return nil, err
-	}
+
 	return user, nil
 
+}
+
+func (authRepo *AuthRepo) FindUserByEmail(email string) (user *authmodel.AuthModel, err error) {
+	err = authRepo.DB.Table(constants.UserTableName).Where("email=?", email).First(&user).Error
+	if err != nil {
+
+		return nil, err
+	}
+
+	return user, nil
 }
