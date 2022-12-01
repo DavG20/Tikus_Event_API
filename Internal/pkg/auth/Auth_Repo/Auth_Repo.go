@@ -7,6 +7,7 @@ import (
 
 	authmodel "github.com/DavG20/Tikus_Event_Api/Internal/pkg/auth/Auth_Model"
 	constants "github.com/DavG20/Tikus_Event_Api/pkg/Utils/Constants"
+	helper "github.com/DavG20/Tikus_Event_Api/pkg/Utils/Helper"
 
 	"gorm.io/gorm"
 )
@@ -19,11 +20,16 @@ func NewAuth(db *gorm.DB) AuthRepo {
 	return AuthRepo{DB: db}
 }
 
-func (authRepo *AuthRepo) CreateUser(userInput *authmodel.UserInput) (dbResponse *authmodel.DBResponse, err error) {
+func (authRepo *AuthRepo) CreateUser(userInput *authmodel.UserRegisterInput) (dbResponse *authmodel.DBResponse, err error) {
+	hashPassword, err := helper.HashPassword(userInput.Password)
+	if err != nil {
+		fmt.Println("error hashing password")
+		return nil, err
+	}
 	user := &authmodel.AuthModel{
 		UserName:   userInput.UserName,
 		Email:      userInput.Email,
-		Password:   userInput.Password,
+		Password:   hashPassword,
 		CreatedOn:  time.Now().Format("2006-01-02 15:04:05.12"),
 		ProfileUrl: userInput.ProfileUrl,
 	}
@@ -67,11 +73,10 @@ func (authRepo *AuthRepo) GetDbResponse(user *authmodel.AuthModel) (dbResponse *
 
 func (authRepo *AuthRepo) FindUserByUserName(userName string) (user *authmodel.AuthModel, err error) {
 	// res:=authRepo.DB.Table(constants.UserTableName).Raw("select * from user_tikus_event where user_name=? ",userName).Find(&user)
-	err = authRepo.DB.Table(constants.UserTableName).Where(authmodel.AuthModel{UserName: userName}).First(&user).Error
-	if err != nil {
+	if err = authRepo.DB.Table(constants.UserTableName).Where(authmodel.AuthModel{UserName: userName}).First(&user).Error; errors.Is(err, gorm.ErrRecordNotFound) {
+		fmt.Println("inhere")
 		return nil, err
 	}
-
 	return user, nil
 
 }

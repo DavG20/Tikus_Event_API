@@ -8,10 +8,10 @@ import (
 
 func GetErrorMessage(fieldErr validator.FieldError) string {
 	switch fieldErr.Tag() {
-	case "required_without":
-		return fmt.Sprintf("The Field %s is required if %s is not sapplied", fieldErr.Field(), fieldErr.Param())
-	case "unique_without":
-		return " must be unique, please try another one"
+	case "required":
+		return fmt.Sprintf("The  %s is required , please write ur %s correctly ", fieldErr.Field(), fieldErr.Field())
+	case "unique":
+		return fmt.Sprintf("%s must be unique, please try another one", fieldErr.Field())
 	case "min":
 		return "The length must be greater than or equal to " + fieldErr.Param()
 	case "email":

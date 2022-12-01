@@ -3,6 +3,7 @@ package db
 import (
 	"fmt"
 
+	authmodel "github.com/DavG20/Tikus_Event_Api/Internal/pkg/auth/Auth_Model"
 	_ "github.com/lib/pq"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -25,6 +26,7 @@ func CreatePostgresConnection() (*gorm.DB, error) {
 	if err != nil {
 		return nil, err
 	}
+	DB.AutoMigrate(&authmodel.AuthModel{})
 	return DB, nil
 
 }

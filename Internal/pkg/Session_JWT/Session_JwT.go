@@ -3,12 +3,14 @@ package sessionjwt
 import (
 	"fmt"
 	"log"
-	"net/http"
 	"os"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
+	"github.com/gin-gonic/gin"
 )
+
+var expirationTime time.Time
 
 type Session struct {
 	jwt.StandardClaims
@@ -23,8 +25,8 @@ func NewCookieHandler() *CookieHandler {
 
 // get cookis from session object
 // session object has username and jwtstandar's
-func (cookieHandler *CookieHandler) CreateCookie(session *Session) (cookie *http.Cookie, err error) {
-	expirationTime := time.Now().Add(2400 * time.Hour)
+func (cookieHandler *CookieHandler) CreateCookie(session *Session) (generatedTokenString string, err error) {
+	expirationTime = time.Now().Add(2400 * time.Hour)
 
 	standardClaim := jwt.StandardClaims{ExpiresAt: expirationTime.Unix()}
 
@@ -35,27 +37,27 @@ func (cookieHandler *CookieHandler) CreateCookie(session *Session) (cookie *http
 	tokenString, err := token.SignedString([]byte(os.Getenv("JWTKEY")))
 	if err != nil {
 		log.Println("error while token signing")
-		return nil, err
+		return "", err
 	}
-	cookie = &http.Cookie{
-		Name:     "token",
-		Value:    tokenString,
-		Expires:  expirationTime,
-		HttpOnly: true,
-	}
-	return cookie, nil
+	// cookie = &http.Cookie{
+	// 	Name:     "token",
+	// 	Value:    tokenString,
+	// 	Expires:  expirationTime,
+	// 	HttpOnly: true,
+	// }
+	return tokenString, nil
 
 }
 
-func (cookieHandler *CookieHandler) ValidateCookie(request *http.Request) (session *Session, isValid bool) {
-	tokenCookie, err := request.Cookie("token")
+func (cookieHandler *CookieHandler) ValidateCookie(context *gin.Context) (session *Session, isValid bool) {
+	tokenCookie, err := context.Cookie("token")
 	if err != nil {
 		fmt.Println("erorr geting cookie from request , in session_jwt")
 		return nil, false
 	}
-	token := tokenCookie.Value
-	fmt.Println(token, "token values")
+	token := tokenCookie
 
+	session = &Session{}
 	tkn, err := jwt.ParseWithClaims(token, session, func(t *jwt.Token) (interface{}, error) {
 		_, ok := t.Method.(*jwt.SigningMethodHMAC)
 		if !ok {
@@ -63,12 +65,14 @@ func (cookieHandler *CookieHandler) ValidateCookie(request *http.Request) (sessi
 		}
 		return []byte(os.Getenv("JWTKEY")), nil
 	})
+	fmt.Println(err, "err")
 	if err != nil {
 		if err == jwt.ErrSignatureInvalid {
 			return nil, false
 		}
 		return nil, false
 	}
+
 	if !tkn.Valid {
 		return nil, false
 	}
@@ -76,7 +80,7 @@ func (cookieHandler *CookieHandler) ValidateCookie(request *http.Request) (sessi
 
 }
 
-func (cookieHandler *CookieHandler) RemoveCookie() (*http.Cookie, error) {
+func (cookieHandler *CookieHandler) RemoveCookie() (string, error) {
 	expirationTime := time.Unix(0, 0)
 
 	session := &Session{
@@ -88,14 +92,23 @@ func (cookieHandler *CookieHandler) RemoveCookie() (*http.Cookie, error) {
 	tokenString, err := token.SignedString([]byte(os.Getenv("JWTKEY")))
 	if err != nil {
 		fmt.Println("error while removing cookie")
-		return nil, err
+		return "", err
 	}
 
-	cookie := &http.Cookie{
-		Name:     "token",
-		Value:    tokenString,
-		Expires:  expirationTime,
-		HttpOnly: true,
-	}
-	return cookie, nil
+	// cookie := &http.Cookie{
+	// 	Name:     "token",
+	// 	Value:    tokenString,
+	// 	Expires:  expirationTime,
+	// 	HttpOnly: true,
+	// }
+	return tokenString, nil
 }
+
+// func (cookieHandler *CookieHandler) SetCookie(tokenString string, context *gin.Context)  {
+// 	context.SetCookie(
+// 		"token",
+// 		tokenString,
+// 		in,
+// 	)
+
+// }

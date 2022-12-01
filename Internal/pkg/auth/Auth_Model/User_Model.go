@@ -10,10 +10,10 @@ type AuthModel struct {
 	Admin      bool   `json:"admin,omitempty"`
 }
 
-type UserInput struct {
+type UserRegisterInput struct {
 	UserName string `json:"user_name,omitempty" gorm:"unique" binding:"required,min=4"`
 	Email    string `json:"email,omitempty" gorm:"unique" binding:"required,email"`
-	Password string `json:"password,omitempty" binding:"required"`
+	Password string `json:"password,omitempty" binding:"required,min=8"`
 	// CreatedOn  time.Time `json:"created_on,omitempty" gorm:"type:time"`
 	ProfileUrl string `json:"profile_url,omitempty"`
 }
@@ -29,6 +29,7 @@ type DBResponse struct {
 	Admin      bool   `json:"admin,omitempty"`
 }
 
+// response when  the input field is invalid
 type ErrMessage struct {
 	Field   string `json:"field"`
 	Message string `json:"message"`
@@ -36,6 +37,11 @@ type ErrMessage struct {
 
 type ResponseMessage struct {
 	Message      string `json:"message"`
-	Success      bool   `json:"success"`
-	InvalidField string `json:"error"`
+	Success      bool   `json:"success,omitempty"`
+	InvalidField string `json:"error,omitempty"`
+}
+
+type UserLoginInput struct {
+	UserName string `json:"username" binding:"required,min=4"`
+	Password string `json:"password" binding:"required,min=8"`
 }

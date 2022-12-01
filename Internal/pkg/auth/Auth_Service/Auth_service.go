@@ -1,6 +1,8 @@
 package authservice
 
 import (
+	"fmt"
+
 	authmodel "github.com/DavG20/Tikus_Event_Api/Internal/pkg/auth/Auth_Model"
 	authrepo "github.com/DavG20/Tikus_Event_Api/Internal/pkg/auth/Auth_Repo"
 )
@@ -14,15 +16,17 @@ func NewAuthService(authRepo authrepo.AuthRepo) AuthService {
 		AuthRepo: authRepo,
 	}
 }
-func (authService *AuthService) CreateUser(user *authmodel.UserInput) (*authmodel.DBResponse, error) {
+func (authService *AuthService) CreateUser(user *authmodel.UserRegisterInput) (*authmodel.DBResponse, error) {
 	return authService.AuthRepo.CreateUser(user)
 }
 
 func (authService *AuthService) FindUserByUserName(userName string) (user *authmodel.AuthModel, state bool) {
 	user, err := authService.AuthRepo.FindUserByUserName(userName)
 	if err != nil {
+		fmt.Println("error")
 		return nil, false
 	}
+
 	// if user == nil {
 	// 	return nil, false
 	// }

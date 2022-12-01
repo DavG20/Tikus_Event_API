@@ -6,6 +6,7 @@ import (
 	"sync"
 
 	api_handler "github.com/DavG20/Tikus_Event_Api/API/API_Handler"
+
 	authmodel "github.com/DavG20/Tikus_Event_Api/Internal/pkg/auth/Auth_Model"
 	authrepo "github.com/DavG20/Tikus_Event_Api/Internal/pkg/auth/Auth_Repo"
 	authservice "github.com/DavG20/Tikus_Event_Api/Internal/pkg/auth/Auth_Service"
@@ -47,10 +48,15 @@ func main() {
 
 	router = gin.Default()
 
-	// res := Db.Table(constants.UserTableName).Where("admin=?", false).Delete(users)
-	// fmt.Println("deleted", res.RowsAffected)
+	public := router.Group("/user")
 
-	router.POST("/", authHandler.CreateUserHandler)
-	router.GET("/check", authHandler.Checkuser)
+	// public routers which doesn't need authorization
+	public.POST("/createuser", authHandler.RegisterHandler())
+
+	// private router, which needs authorization
+	private := router.Group("/user")
+	private.Use(authHandler.AuthRequired())
+	private.GET("/searchuser", authHandler.SearchUser)
+
 	router.Run(":8080")
 }
