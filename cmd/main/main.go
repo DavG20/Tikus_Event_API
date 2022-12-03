@@ -52,11 +52,16 @@ func main() {
 
 	// public routers which doesn't need authorization
 	public.POST("/createuser", authHandler.RegisterHandler())
+	public.POST("/login", authHandler.LoginHandler)
 
 	// private router, which needs authorization
 	private := router.Group("/user")
 	private.Use(authHandler.AuthRequired())
 	private.GET("/searchuser", authHandler.SearchUser)
+	private.POST("/logout", authHandler.LogoutHandler)
+	private.POST("/deleteaccount", authHandler.DeleteAccount)
+	private.GET("/getuserinfo", authHandler.GetUserInfo)
+	private.POST("/changepassword", authHandler.ChangePasswordHandler)
 
 	router.Run(":8080")
 }
