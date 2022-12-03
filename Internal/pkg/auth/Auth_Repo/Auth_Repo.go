@@ -57,7 +57,6 @@ func (authRepo *AuthRepo) CreateUser(userInput *authmodel.UserRegisterInput) (db
 }
 func (authRepo *AuthRepo) GetDbResponse(user *authmodel.AuthModel) (dbResponse *authmodel.DBResponse, err error) {
 	dbResponse = &authmodel.DBResponse{
-		UserId:     user.UserId,
 		UserName:   user.UserName,
 		Email:      user.Email,
 		CreatedOn:  user.CreatedOn,
@@ -89,4 +88,26 @@ func (authRepo *AuthRepo) FindUserByEmail(email string) (user *authmodel.AuthMod
 	}
 
 	return user, nil
+}
+
+func (authRepo *AuthRepo) DeleteAccount(userName string) error {
+	user := authmodel.AuthModel{}
+	err := authRepo.DB.Table(constants.UserTableName).Where("user_name=?", userName).Delete(&user).Error
+	if err != nil {
+		fmt.Println("in here repo delete")
+		return err
+	}
+	return err
+}
+
+// change password from user input after checking somre requirments
+func (authRepo *AuthRepo) ChangePassword(userNamse, newPassword string) bool {
+
+	err := authRepo.DB.Table(constants.UserTableName).Where("user_name", userNamse).Update("password", newPassword).Error
+	if err != nil {
+		fmt.Println("eroro in here")
+		return false
+	}
+	return true
+
 }

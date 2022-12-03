@@ -94,21 +94,5 @@ func (cookieHandler *CookieHandler) RemoveCookie() (string, error) {
 		fmt.Println("error while removing cookie")
 		return "", err
 	}
-
-	// cookie := &http.Cookie{
-	// 	Name:     "token",
-	// 	Value:    tokenString,
-	// 	Expires:  expirationTime,
-	// 	HttpOnly: true,
-	// }
 	return tokenString, nil
 }
-
-// func (cookieHandler *CookieHandler) SetCookie(tokenString string, context *gin.Context)  {
-// 	context.SetCookie(
-// 		"token",
-// 		tokenString,
-// 		in,
-// 	)
-
-// }

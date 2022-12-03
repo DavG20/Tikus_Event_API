@@ -20,7 +20,6 @@ type UserRegisterInput struct {
 
 // it helps to return the created on value with out changed it to time
 type DBResponse struct {
-	UserId   string `json:"user_id,omitempty" gorm:"primaryKey ; autoIncrement:true"`
 	UserName string `json:"user_name,omitempty" gorm:"unique" binding:"required,min=4"`
 	Email    string `json:"email,omitempty" gorm:"unique" binding:"required,email"`
 	// Password   string    `json:"password,omitempty"`
@@ -42,6 +41,6 @@ type ResponseMessage struct {
 }
 
 type UserLoginInput struct {
-	UserName string `json:"username" binding:"required,min=4"`
+	UserName string `json:"user_name" binding:"required,min=4"`
 	Password string `json:"password" binding:"required,min=8"`
 }

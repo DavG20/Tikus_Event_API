@@ -41,3 +41,23 @@ func (authService *AuthService) FindUserByEmail(email string) (*authmodel.AuthMo
 	}
 	return user, true
 }
+
+func (authService *AuthService) GetDbResponse(user *authmodel.AuthModel) (*authmodel.DBResponse, bool) {
+	dbResponse, err := authService.AuthRepo.GetDbResponse(user)
+	if err != nil {
+		return nil, false
+	}
+	return dbResponse, true
+}
+
+func (authService *AuthService) DeleteAccount(userName string) bool {
+	err := authService.AuthRepo.DeleteAccount(userName)
+	if err != nil {
+		return false
+	}
+	return true
+}
+
+func (authService *AuthService) ChangePassword(userName, newPassword string) bool {
+	return authService.AuthRepo.ChangePassword(userName, newPassword)
+}

@@ -6,4 +6,7 @@ type AuthRepoInter interface {
 	CreateUser(*authmodel.AuthModel) *authmodel.DBResponse
 	FindUserByUserName(userName string) (*authmodel.AuthModel, error)
 	FindUserByEmail(email string) (*authmodel.AuthModel, error)
+	GetDbResponse(*authmodel.AuthModel) (authmodel.DBResponse, error)
+	DeleteAccount(userName string) error
+	ChangePassword(userName, newPassword string) error
 }
