@@ -3,7 +3,10 @@ package apihandler
 import (
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
+	"os"
+	"strings"
 
 	sessionjwt "github.com/DavG20/Tikus_Event_Api/Internal/pkg/Session_JWT"
 	authmodel "github.com/DavG20/Tikus_Event_Api/Internal/pkg/auth/Auth_Model"
@@ -379,4 +382,59 @@ func (authHandler *AuthHandler) ChangePasswordHandler(context *gin.Context) {
 	responseMessage.Success = true
 	context.JSON(http.StatusOK, responseMessage)
 
+}
+
+// let's store profile pic in filesystem
+func (authHandler *AuthHandler) UploadProfileHandler(context *gin.Context) {
+
+	responseMessage := authmodel.ResponseMessage{}
+	//   get user's username from the context  for the purpose of profile pic filename
+	session, _ := authHandler.CookieHandler.ValidateCookie(context)
+	file, header, err := context.Request.FormFile("profile")
+	if err != nil {
+		responseMessage.Message = "please choose the right picture for profile"
+		responseMessage.Success = false
+		context.JSON(http.StatusBadRequest, responseMessage)
+		return
+	}
+	var filename []string
+	if filename = strings.Split(header.Filename, "."); len(filename) <= 1 {
+		responseMessage.Message = "the input file is not valid , please try picture types only"
+		responseMessage.Success = false
+		context.JSON(http.StatusBadRequest, responseMessage)
+		return
+
+	}
+	extension := filename[1]
+	isExtensionRight := helper.CheckExstension(extension)
+	if !isExtensionRight {
+		responseMessage.Message = "please use images only"
+		responseMessage.Success = false
+		context.JSON(http.StatusBadRequest, responseMessage)
+		return
+	}
+	// create a custom file name using username and exstension from the input image
+	// let's use png extension for filtering mechanism , so there won't be a multiple file for a single username
+	// it will overwrite every time a user update profile
+	fileName := session.UserName + "." + "png"
+	// create the image file in the static file folder
+	profileUri := "../../pkg/Entity/Static/profile/" + fileName
+	profileNamePath, err := os.Create(profileUri)
+	if err != nil {
+		responseMessage.Message = "fialed to save profile, "
+		responseMessage.Success = false
+		context.JSON(http.StatusInternalServerError, responseMessage)
+		return
+	}
+    
+	defer profileNamePath.Close()
+	_, err = io.Copy(profileNamePath, file)
+	if err != nil {
+		return
+	}
+	fmt.Println(profileNamePath)
+	// the profile is uploaded succesfuly
+	responseMessage.Message = "profile uploaded succesfuly"
+	responseMessage.Success = true
+	context.JSON(http.StatusOK, responseMessage)
 }

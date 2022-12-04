@@ -62,6 +62,7 @@ func main() {
 	private.POST("/deleteaccount", authHandler.DeleteAccount)
 	private.GET("/getuserinfo", authHandler.GetUserInfo)
 	private.POST("/changepassword", authHandler.ChangePasswordHandler)
+	private.POST("uploadprofile", authHandler.UploadProfileHandler)
 
 	router.Run(":8080")
 }

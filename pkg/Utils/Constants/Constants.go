@@ -10,3 +10,5 @@ const (
 	UserKey       = "username"
 	UserSecretKey = "tikus_event_key"
 )
+
+var Extension = []string{"jpg", "jpeg", "png", "gif", "tif"}
