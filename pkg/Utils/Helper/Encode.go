@@ -1,26 +1,23 @@
 package helper
 
 import (
-	"encoding/base64"
+	"fmt"
 	"time"
+
+	"github.com/dgrijalva/jwt-go"
 )
 
 type PasswordResetData struct {
-	ResetURL string    `json:"reseturl"`
-	Message  string    `json:"message"`
-	ExpireAt time.Time `json:"expireat"`
+	jwt.StandardClaims
+	Email string `json:"email"`
 }
 
-func EncodeRestPassword(s string) string {
-	data := base64.StdEncoding.EncodeToString([]byte(s))
-	return string(data)
-}
+func GenerateResetCode(passReset PasswordResetData) string {
+	expireAt := time.Now().Add(30 * time.Minute)
+	standardClaim := jwt.StandardClaims{ExpiresAt: expireAt.Unix(), Issuer: "Negarit"}
+	passReset.StandardClaims = standardClaim
 
-func DecodeRestPassword(s string) (string, error) {
-	data, err := base64.StdEncoding.DecodeString(s)
-	if err != nil {
-		return "", err
-	}
-	return string(data), nil
-
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, passReset)
+	fmt.Println(token)
+return ""
 }

@@ -34,7 +34,7 @@ func (cookieHandler *CookieHandler) CreateCookie(session *Session) (generatedTok
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, session)
 
-	tokenString, err := token.SignedString([]byte(os.Getenv("JWTKEY")))
+	tokenString, err := token.SignedString([]byte("JWTKEY"))
 	if err != nil {
 		log.Println("error while token signing")
 		return "", err
@@ -63,7 +63,7 @@ func (cookieHandler *CookieHandler) ValidateCookie(context *gin.Context) (sessio
 		if !ok {
 			return "", nil
 		}
-		return []byte(os.Getenv("JWTKEY")), nil
+		return []byte("JWTKEY"), nil
 	})
 	fmt.Println(err, "err")
 	if err != nil {
