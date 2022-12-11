@@ -202,7 +202,7 @@ func (authHandler *AuthHandler) AuthRequired() gin.HandlerFunc {
 		}
 		_, isUserNameExist := authHandler.authService.FindUserByUserName(session.UserName)
 		if !isUserNameExist {
-			responseMessage.Message = "you are not the right user to logout"
+			responseMessage.Message = "you are not the right user , or username not found"
 			context.JSON(http.StatusUnauthorized, responseMessage)
 			context.Abort()
 			return
@@ -334,14 +334,14 @@ func (authHandler *AuthHandler) ChangePasswordHandler(context *gin.Context) {
 
 	// get the username from user's session or cookie
 	session, isValidToken := authHandler.CookieHandler.ValidateCookie(context)
-	// just incase check if the cookie is  valid , even if it is checked buy the authrequired func
+	// just incase check if the cookie is  valid , even if it is checked by the authrequired func
 	if !isValidToken {
 		responseMessage.Message = "unauthorized user to get this service"
 		responseMessage.Success = false
 		context.JSON(http.StatusUnauthorized, responseMessage)
 		return
 	}
-	// check is the user is in our db , if the user is in the system then processed ...
+	// check if the user is in our db , if the user is in the system then processed ...
 	user, isUserExist := authHandler.authService.FindUserByUserName(session.UserName)
 	if !isUserExist {
 		// the username in the cookie is not from the one we sent during the user loggedin or register
@@ -365,10 +365,9 @@ func (authHandler *AuthHandler) ChangePasswordHandler(context *gin.Context) {
 		context.JSON(http.StatusInternalServerError, responseMessage)
 		return
 	}
-	fmt.Println(user.UserName, "above")
+
 	// the final step let's change the password
 	passwordChangedSuccess := authHandler.authService.ChangePassword(user.UserName, hashNewPassword)
-	fmt.Println(hashNewPassword, "below")
 	if !passwordChangedSuccess {
 		// incase some problem happens and can't change password
 		responseMessage.Message = "can't change password , internal problem occur"
@@ -406,6 +405,7 @@ func (authHandler *AuthHandler) UploadProfileHandler(context *gin.Context) {
 
 	}
 	extension := filename[1]
+	// check if the input is the correct format
 	isExtensionRight := helper.CheckExstension(extension)
 	if !isExtensionRight {
 		responseMessage.Message = "please use images only"
@@ -426,15 +426,102 @@ func (authHandler *AuthHandler) UploadProfileHandler(context *gin.Context) {
 		context.JSON(http.StatusInternalServerError, responseMessage)
 		return
 	}
-    
+
 	defer profileNamePath.Close()
 	_, err = io.Copy(profileNamePath, file)
 	if err != nil {
 		return
 	}
-	fmt.Println(profileNamePath)
+
+	// get user info and update the profileurl to the new one
+	user, _ := authHandler.authService.FindUserByUserName(session.UserName)
+	user.ProfileUrl = profileUri
+
+	// chech is the profile is updated
+	isProfileUrlUpdated := authHandler.authService.UpdateUserInfo(user)
+	if !isProfileUrlUpdated {
+		responseMessage.Message = "internal error , can't update profile please try again"
+		responseMessage.Success = false
+		context.JSON(http.StatusOK, responseMessage)
+		return
+	}
 	// the profile is uploaded succesfuly
 	responseMessage.Message = "profile uploaded succesfuly"
 	responseMessage.Success = true
 	context.JSON(http.StatusOK, responseMessage)
+}
+
+func (authHandler *AuthHandler) DownloadProfile(context *gin.Context) {
+	responseMessage := authmodel.ResponseMessage{}
+	// Session is used to get user's username
+	// username is used for tracking user's profile
+	session, _ := authHandler.CookieHandler.ValidateCookie(context)
+
+	// lets get the profile from user's profile_url
+	user, _ := authHandler.authService.FindUserByUserName(session.UserName)
+	profilePath := user.ProfileUrl
+
+	profile, err := os.Open(profilePath)
+	// let's check if somting went wrong when reading profile pic
+	if err != nil {
+		responseMessage.Message = "you don't have profile picture"
+		responseMessage.Success = false
+		context.JSON(http.StatusInternalServerError, responseMessage)
+		return
+	}
+	defer profile.Close()
+	fmt.Println(profile)
+	// context.JSON(http.StatusOK, gin.H{"message": "succes"})
+	context.FileAttachment(profilePath, session.UserName+".png")
+
+}
+
+func (authHandler *AuthHandler) DeleteProfilePic(context *gin.Context) {
+	responseMessage := authmodel.ResponseMessage{}
+	session, _ := authHandler.CookieHandler.ValidateCookie(context)
+	User, _ := authHandler.authService.FindUserByUserName(session.UserName)
+
+	err := os.Remove(User.ProfileUrl)
+	if err != nil {
+		responseMessage.Message = "can't delete profile pic , try again"
+		responseMessage.Success = false
+		context.JSON(http.StatusInternalServerError, responseMessage)
+		return
+	}
+	User.ProfileUrl = ""
+	isUserInfoUpdated := authHandler.authService.UpdateUserInfo(User)
+	if !isUserInfoUpdated {
+		responseMessage.Message = "can't update profile picture , please try again"
+		responseMessage.Success = false
+		context.JSON(http.StatusInternalServerError, responseMessage)
+		return
+	}
+	responseMessage.Success = true
+	responseMessage.Message = "profile deleted succesfuly"
+	context.JSON(http.StatusOK, responseMessage)
+
+}
+
+func (authHandler *AuthHandler) ForgotPasswordHandler(context *gin.Context) {
+	responseMessage := authmodel.ResponseMessage{}
+	userEmail := &struct {
+		UserEmail string `json:"email" binding:"required,email"`
+	}{}
+	if err := context.ShouldBindJSON(&userEmail); err != nil {
+		responseMessage.Message = "please use the correct email address"
+		responseMessage.Success = false
+		context.JSON(http.StatusBadRequest, responseMessage)
+		return
+
+	}
+	// if the validation is ok then check the email
+	user, isEmailExist := authHandler.authService.FindUserByEmail(userEmail.UserEmail)
+	if !isEmailExist {
+		responseMessage.Message = "the email address is not found, check if it is the the right email"
+		responseMessage.Success = false
+		context.JSON(http.StatusNotFound, responseMessage)
+		return
+	}
+	fmt.Println(user)
+
 }

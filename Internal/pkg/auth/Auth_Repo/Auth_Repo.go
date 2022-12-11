@@ -111,3 +111,20 @@ func (authRepo *AuthRepo) ChangePassword(userNamse, newPassword string) bool {
 	return true
 
 }
+
+//	func(authRepo *AuthRepo) UploadProfile(profilePath, userName string)bool{
+//		err:=authRepo.DB.Table(constants.UserTableName).Where("user_name=?",userName).Update("profile_url",profilePath).Error
+//		if err!=nil{
+//			fmt.Println("error in here")
+//			return false
+//		}
+//		return true
+//	}
+func (authRepo *AuthRepo) UpdateUserInfo(user *authmodel.AuthModel) bool {
+	err := authRepo.DB.Table(constants.UserTableName).Save(user).Error
+	if err != nil {
+		fmt.Println("error in repo line 126")
+		return false
+	}
+	return true
+}

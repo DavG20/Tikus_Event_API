@@ -1,11 +1,13 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"sync"
 
 	api_handler "github.com/DavG20/Tikus_Event_Api/API/API_Handler"
+	helper "github.com/DavG20/Tikus_Event_Api/pkg/Utils/Helper"
 
 	authmodel "github.com/DavG20/Tikus_Event_Api/Internal/pkg/auth/Auth_Model"
 	authrepo "github.com/DavG20/Tikus_Event_Api/Internal/pkg/auth/Auth_Repo"
@@ -50,6 +52,10 @@ func main() {
 
 	public := router.Group("/user")
 
+	rsetCode := helper.EncodeRestPassword("hey")
+	correct, err := helper.DecodeRestPassword(rsetCode)
+	fmt.Println(correct, err)
+
 	// public routers which doesn't need authorization
 	public.POST("/createuser", authHandler.RegisterHandler())
 	public.POST("/login", authHandler.LoginHandler)
@@ -63,6 +69,9 @@ func main() {
 	private.GET("/getuserinfo", authHandler.GetUserInfo)
 	private.POST("/changepassword", authHandler.ChangePasswordHandler)
 	private.POST("uploadprofile", authHandler.UploadProfileHandler)
+	private.GET("downloadprofile", authHandler.DownloadProfile)
+	private.POST("/deleteprofile", authHandler.DeleteProfilePic)
+	private.GET("forgotpassword", authHandler.ForgotPasswordHandler)
 
 	router.Run(":8080")
 }

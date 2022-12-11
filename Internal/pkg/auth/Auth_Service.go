@@ -9,4 +9,6 @@ type AuthServiceInter interface {
 	GetDbResponse(*authmodel.AuthModel) (authmodel.DBResponse, bool)
 	DeleteAccount(userName string) bool
 	ChangePassword(userName,newPassword string)bool
+	// UploadProfile(profilePath,userName string) bool
+	UpdateUserInfo(*authmodel.AuthModel) bool
 }

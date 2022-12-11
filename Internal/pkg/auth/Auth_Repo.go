@@ -9,4 +9,7 @@ type AuthRepoInter interface {
 	GetDbResponse(*authmodel.AuthModel) (authmodel.DBResponse, error)
 	DeleteAccount(userName string) error
 	ChangePassword(userName, newPassword string) error
+	UpdateUserInfo(*authmodel.AuthModel) bool
+	// UploadProfile(profilePath,userName string) bool
+
 }

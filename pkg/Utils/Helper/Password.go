@@ -22,3 +22,4 @@ func ComparePassword(hashPassword, inputPassword string) bool {
 	}
 	return true
 }
+

@@ -61,3 +61,7 @@ func (authService *AuthService) DeleteAccount(userName string) bool {
 func (authService *AuthService) ChangePassword(userName, newPassword string) bool {
 	return authService.AuthRepo.ChangePassword(userName, newPassword)
 }
+
+func (authService *AuthService) UpdateUserInfo(user *authmodel.AuthModel) bool {
+	return authService.AuthRepo.UpdateUserInfo(user)
+}
