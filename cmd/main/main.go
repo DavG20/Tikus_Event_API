@@ -1,18 +1,19 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"sync"
 
 	api_handler "github.com/DavG20/Tikus_Event_Api/API/API_Handler"
-	helper "github.com/DavG20/Tikus_Event_Api/pkg/Utils/Helper"
 
 	authmodel "github.com/DavG20/Tikus_Event_Api/Internal/pkg/auth/Auth_Model"
 	authrepo "github.com/DavG20/Tikus_Event_Api/Internal/pkg/auth/Auth_Repo"
 	authservice "github.com/DavG20/Tikus_Event_Api/Internal/pkg/auth/Auth_Service"
 	DB "github.com/DavG20/Tikus_Event_Api/Internal/pkg/db"
+
+	eventrepo "github.com/DavG20/Tikus_Event_Api/Internal/pkg/event/Event_Repo"
+	eventService "github.com/DavG20/Tikus_Event_Api/Internal/pkg/event/Event_Service"
 	"github.com/gin-gonic/gin"
 
 	"gorm.io/gorm"
@@ -44,17 +45,18 @@ func init() {
 }
 
 func main() {
+	// auth part
 	authRepo := authrepo.NewAuth(Db)
 	authService := authservice.NewAuthService(authRepo)
 	authHandler := api_handler.NewauthHandler(authService)
 
+	// event
+	eventRepo := eventrepo.NewEventRepo(Db)
+	eventService := eventService.NewEventService(eventRepo)
+	eventHandler := api_handler.NewEventHandler(eventService)
 	router = gin.Default()
 
 	public := router.Group("/user")
-
-	rsetCode := helper.EncodeRestPassword("hey")
-	correct, err := helper.DecodeRestPassword(rsetCode)
-	fmt.Println(correct, err)
 
 	// public routers which doesn't need authorization
 	public.POST("/createuser", authHandler.RegisterHandler())
@@ -72,6 +74,7 @@ func main() {
 	private.GET("downloadprofile", authHandler.DownloadProfile)
 	private.POST("/deleteprofile", authHandler.DeleteProfilePic)
 	private.GET("forgotpassword", authHandler.ForgotPasswordHandler)
+	private.POST("event/createvent", eventHandler.CreateEventHendler)
 
 	router.Run(":8080")
 }
