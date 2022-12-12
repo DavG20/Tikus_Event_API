@@ -74,7 +74,10 @@ func main() {
 	private.GET("downloadprofile", authHandler.DownloadProfile)
 	private.POST("/deleteprofile", authHandler.DeleteProfilePic)
 	private.GET("forgotpassword", authHandler.ForgotPasswordHandler)
+
+	// event part
 	private.POST("event/createvent", eventHandler.CreateEventHendler)
+	private.POST("event/uploadeventpic", eventHandler.UplaodEventProfilePic)
 
 	router.Run(":8080")
 }
