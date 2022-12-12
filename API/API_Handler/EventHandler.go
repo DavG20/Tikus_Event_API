@@ -3,9 +3,9 @@ package apihandler
 import (
 	"fmt"
 	"net/http"
-	"time"
 
 	sessionjwt "github.com/DavG20/Tikus_Event_Api/Internal/pkg/Session_JWT"
+	authmodel "github.com/DavG20/Tikus_Event_Api/Internal/pkg/auth/Auth_Model"
 	eventmodel "github.com/DavG20/Tikus_Event_Api/Internal/pkg/event/EventModel"
 	eventservice "github.com/DavG20/Tikus_Event_Api/Internal/pkg/event/Event_Service"
 	"github.com/gin-gonic/gin"
@@ -23,29 +23,46 @@ func NewEventHandler(eventService eventservice.EventService) *EventHandler {
 }
 
 func (eventHandler *EventHandler) CreateEventHendler(context *gin.Context) {
-	userInput := eventmodel.EventUserInput{}
+	responseMessage := authmodel.ResponseMessage{}
+	userInput := &eventmodel.EventUserInput{}
 	if err := context.ShouldBindJSON(&userInput); err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"message": "can't bind json"})
 		return
 	}
-	fmt.Println("fine", userInput)
-	begin, err := (time.Parse("2006-01-02T15:04:05.000Z", userInput.EventDeadline))
-	fmt.Println(begin, err)
-	event := &eventmodel.EventModel{
-		UserName:       userInput.UserName,
-		Description:    userInput.Description,
-		EventCreatedOn: time.Now(),
-		EventEndsOn:    begin,
-		EventDeadline:  begin,
-		EventBeginsOn:  begin,
-		AllSeats:       userInput.AllSeats,
-		ReservedSeats:  userInput.ReservedSeats,
-	}
-	savedEvent, issaved := eventHandler.eventService.CreateEvent(event)
+
+	// lets save the event
+	// createEvent method in repo will add the event in to the db and return the newly added event id
+	eventId, issaved := eventHandler.eventService.CreateEvent(userInput)
 	if !issaved {
-		context.JSON(http.StatusInternalServerError, gin.H{"message": "error"})
+		responseMessage.Message = "Internal server error,"
+		responseMessage.Success = false
+		context.JSON(http.StatusInternalServerError, responseMessage)
 		return
 	}
-	fmt.Println("fine", savedEvent)
+
+	eventFromDB, isEventExist := eventHandler.eventService.FindEventByEventId(eventId)
+	if !isEventExist {
+		responseMessage.Message = "can't get event , internal server error"
+		responseMessage.Success = false
+		context.JSON(http.StatusInternalServerError, responseMessage)
+		return
+	}
+	context.JSON(http.StatusOK, eventFromDB)
+
+}
+
+func (eventHandler *EventHandler) UplaodEventProfilePic(context *gin.Context) {
+	responseMessage := authmodel.ResponseMessage{}
+	//  here the request will automatically checked by authrequired  func if the user is authenticated or not
+	// but here we need the event's ID to update event's profile
+	eventID := context.Request.FormValue("eventid")
+	if eventID == "" {
+		responseMessage.Message = "Invalid event id please use the correct event id to update event profile"
+		responseMessage.Success = false
+		context.JSON(http.StatusBadRequest, responseMessage)
+		return
+
+	}
+	fmt.Println("fine")
 
 }

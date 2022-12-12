@@ -1,14 +1,13 @@
 package eventservice
 
 import (
-	"fmt"
-
 	eventmodel "github.com/DavG20/Tikus_Event_Api/Internal/pkg/event/EventModel"
 	eventrepo "github.com/DavG20/Tikus_Event_Api/Internal/pkg/event/Event_Repo"
 )
 
 type IEventService interface {
-	CreateEvent(eventmodel.EventUserInput) (eventmodel.EventModel, bool)
+	CreateEvent(eventmodel.EventUserInput) bool
+	FindEventByEventId(string) (eventmodel.EventModel, bool)
 }
 
 type EventService struct {
@@ -21,11 +20,18 @@ func NewEventService(evnetRepo eventrepo.IEventRepo) EventService {
 	}
 }
 
-func (eventService *EventService) CreateEvent(userInput *eventmodel.EventModel) (*eventmodel.EventModel, bool) {
-	user, err := eventService.EventRepo.CreateEvent(userInput)
+func (eventService *EventService) CreateEvent(userInput *eventmodel.EventUserInput) (string, bool) {
+	eventId, err := eventService.EventRepo.CreateEvent(userInput)
 	if err != nil {
-		fmt.Println("error in event service")
+		return "", false
+	}
+	return eventId, true
+}
+
+func (eventService *EventService) FindEventByEventId(eventID string) (*eventmodel.EventModel, bool) {
+	event, err := eventService.EventRepo.FindEventByEventId(eventID)
+	if err != nil {
 		return nil, false
 	}
-	return user, true
+	return event, true
 }
