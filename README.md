@@ -1,6 +1,8 @@
-#Tikus-Event_API
+<h2 align="center">Tikus-Event_API<h2>
 
-Event posting and registering app
+---
+
+<h4 align="center">Event posting and registering app<h4>
 
  • Users Login and Create their profile
  • They can Create, Update, Delete events
@@ -8,8 +10,8 @@ Event posting and registering app
  • Users can Follow or UnFollow other Users to get future events organized by those users
  
 
-#Tikus events Front-End:
-#https://github.com/DavG20/Tikus_Event
+<h3>Tikus events Front-End:<h3>
+<p>https://github.com/DavG20/Tikus_Event<p>
 
 
 
