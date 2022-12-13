@@ -101,14 +101,7 @@ func (authHandler *AuthHandler) LoginHandler(context *gin.Context) {
 	responseMessage := authmodel.ResponseMessage{}
 	session := sessionjwt.Session{}
 
-	// check is the user is already logged in
-	_, isValid := authHandler.CookieHandler.ValidateCookie(context)
-	if isValid {
-		responseMessage.Message = "you are logged in already "
-		responseMessage.Success = false
-		context.JSON(http.StatusNotAcceptable, responseMessage)
-		return
-	}
+	ss, isValid := authHandler.CookieHandler.ValidateCookie(context)
 	if err := context.ShouldBindJSON(&userInput); err != nil {
 		var valErr validator.ValidationErrors
 		if errors.As(err, &valErr) {
@@ -120,6 +113,13 @@ func (authHandler *AuthHandler) LoginHandler(context *gin.Context) {
 			return
 		}
 		context.JSON(http.StatusBadRequest, gin.H{"errors": "bad input"})
+		return
+	}
+	// check is the user is already logged in
+	if isValid && ss.UserName == userInput.UserName {
+		responseMessage.Message = "you are logged in already "
+		responseMessage.Success = false
+		context.JSON(http.StatusNotAcceptable, responseMessage)
 		return
 	}
 	// check if the client exist in our db

@@ -78,6 +78,7 @@ func main() {
 	// event part
 	private.POST("event/createvent", eventHandler.CreateEventHendler)
 	private.POST("event/uploadeventpic", eventHandler.UplaodEventProfilePic)
+	private.POST("/event/update", eventHandler.UpdateEventHandler)
 
 	router.Run(":8080")
 }

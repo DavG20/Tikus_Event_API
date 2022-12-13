@@ -1,6 +1,7 @@
 package eventrepo
 
 import (
+	"fmt"
 	"time"
 
 	eventmodel "github.com/DavG20/Tikus_Event_Api/Internal/pkg/event/EventModel"
@@ -12,6 +13,7 @@ import (
 type IEventRepo interface {
 	CreateEvent(*eventmodel.EventUserInput) (string, error)
 	FindEventByEventId(string) (*eventmodel.EventModel, error)
+	SaveEvent(*eventmodel.EventModel) (*eventmodel.EventModel, bool)
 }
 
 type EventRepo struct {
@@ -60,4 +62,14 @@ func (eventRepo *EventRepo) FindEventByEventId(eventID string) (event *eventmode
 	}
 	return event, nil
 
+}
+
+func (eventRepo *EventRepo) SaveEvent(eventInput *eventmodel.EventModel) (event *eventmodel.EventModel, isSaved bool) {
+	err := eventRepo.DB.Table(constants.EventTableName).Save(eventInput).Error
+	if err != nil {
+		fmt.Println("error here")
+		return nil, false
+	}
+	event, _ = eventRepo.FindEventByEventId(eventInput.EventID)
+	return event, true
 }

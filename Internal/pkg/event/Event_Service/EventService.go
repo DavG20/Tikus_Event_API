@@ -8,6 +8,7 @@ import (
 type IEventService interface {
 	CreateEvent(eventmodel.EventUserInput) bool
 	FindEventByEventId(string) (eventmodel.EventModel, bool)
+	SaveEvent(*eventmodel.EventModel)
 }
 
 type EventService struct {
@@ -34,4 +35,8 @@ func (eventService *EventService) FindEventByEventId(eventID string) (*eventmode
 		return nil, false
 	}
 	return event, true
+}
+
+func (eventService *EventService) SaveEvent(eventInput *eventmodel.EventModel) (*eventmodel.EventModel, bool) {
+	return eventService.EventRepo.SaveEvent(eventInput)
 }

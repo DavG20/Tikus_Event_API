@@ -42,3 +42,12 @@ type DBResponse struct {
 	AllSeats      int    `json:"allseats"`
 	ReservedSeats int    `json:"reserveredseats"`
 }
+
+type UpdateEventInput struct {
+	EventID       string `json:"event_id" binding:"required"`
+	EventTitle    string `json:"event_title,omitempty"`
+	Description   string `json:"description,omitempty"`
+	EventBeginsOn string `json:"eventbegins_on,omitempty"`
+	EventEndsOn   string `json:"eventends_on,omitempty"`
+	EventDeadline string `json:"event_deadline,omitempty"`
+}
