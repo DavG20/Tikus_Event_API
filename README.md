@@ -1,6 +1,5 @@
 <h2 align="center">Tikus-Event_API<h2>
 
----
 
 <h4 align="center">Event posting and registering app<h4>
 
