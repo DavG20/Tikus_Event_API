@@ -36,3 +36,12 @@ func SaveProfileInFileSystem(file multipart.File, userName, eventId string) stri
 	return profilePath
 
 }
+
+func RemoveProfileFromFileSystem(fileName string) bool {
+	profilePath := "../../pkg/Entity/Static/EventProfile/" + fileName
+	err := os.Remove(profilePath)
+	if err != nil {
+		return false
+	}
+	return true
+}

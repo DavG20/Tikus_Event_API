@@ -14,6 +14,8 @@ type IEventRepo interface {
 	CreateEvent(*eventmodel.EventUserInput) (string, error)
 	FindEventByEventId(string) (*eventmodel.EventModel, error)
 	SaveEvent(*eventmodel.EventModel) (*eventmodel.EventModel, bool)
+	EventEncoder(*eventmodel.EventModel, eventmodel.UpdateEventInput) (*eventmodel.EventModel, bool)
+	DeleteEvent(*eventmodel.EventModel) bool
 }
 
 type EventRepo struct {
@@ -72,4 +74,52 @@ func (eventRepo *EventRepo) SaveEvent(eventInput *eventmodel.EventModel) (event 
 	}
 	event, _ = eventRepo.FindEventByEventId(eventInput.EventID)
 	return event, true
+}
+
+func (eventRepo *EventRepo) EventEncoder(event *eventmodel.EventModel, EventUpdateInput eventmodel.UpdateEventInput) (*eventmodel.EventModel, bool) {
+
+	if EventUpdateInput.Description != "" {
+		event.Description = EventUpdateInput.Description
+	}
+	if EventUpdateInput.EventTitle != "" {
+		event.EventTitle = EventUpdateInput.EventTitle
+	}
+	if EventUpdateInput.EventEndsOn != "" {
+		eventEnds, err := helper.SingleDateHelper(EventUpdateInput.EventEndsOn)
+		if err == nil {
+			event.EventEndsOn = eventEnds.Format("2006-01-02 15:04:05.12")
+		}
+
+	}
+	if EventUpdateInput.EventBeginsOn != "" {
+		eventBegins, err := helper.SingleDateHelper(EventUpdateInput.EventBeginsOn)
+		if err == nil {
+			event.EventBeginsOn = eventBegins.Format("2006-01-02 15:04:05.12")
+		}
+
+	}
+	if EventUpdateInput.EventDeadline != "" {
+		eventDeadline, err := helper.SingleDateHelper(EventUpdateInput.EventDeadline)
+		if err == nil {
+			event.EventBeginsOn = eventDeadline.Format("2006-01-02 15:04:05.12")
+		}
+
+	}
+
+	// updatedEvent, isUpdated := eventRepo.SaveEvent(event)
+	// if !isUpdated {
+	// 	fmt.Println("can't update event")
+	// 	return nil, false
+	// }
+	return event, true
+
+}
+
+func (eventRepo *EventRepo) DeleteEvent(event *eventmodel.EventModel) bool {
+	err := eventRepo.DB.Table(constants.EventTableName).Delete(event).Error
+	if err != nil {
+		fmt.Println("can't delete event in repo")
+		return false
+	}
+	return true
 }

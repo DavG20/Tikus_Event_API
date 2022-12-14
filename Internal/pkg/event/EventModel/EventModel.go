@@ -12,7 +12,7 @@ type EventModel struct {
 	EventDeadline  string `json:"event_deadline"`
 	EventPicture   string `json:"event_picture"`
 	AllSeats       int    `json:"allseats"`
-	ReservedSeats  int    `json:"reserveredseats"`
+	ReservedSeats  int    `json:"reservedseats"`
 }
 
 // user input while creating event
@@ -26,7 +26,7 @@ type EventUserInput struct {
 	EventDeadline  string `json:"event_deadline"`
 	EventPicture   string `json:"event_picture"`
 	AllSeats       int    `json:"allseats"`
-	ReservedSeats  int    `json:"reserveredseats"`
+	ReservedSeats  int    `json:"reservedseats"`
 }
 
 // filterd Response for user
@@ -40,7 +40,7 @@ type DBResponse struct {
 	EventDeadline string `json:"event_deadline"`
 	EventPicture  string `json:"event_picture"`
 	AllSeats      int    `json:"allseats"`
-	ReservedSeats int    `json:"reserveredseats"`
+	ReservedSeats int    `json:"reservedseats"`
 }
 
 type UpdateEventInput struct {
@@ -50,4 +50,5 @@ type UpdateEventInput struct {
 	EventBeginsOn string `json:"eventbegins_on,omitempty"`
 	EventEndsOn   string `json:"eventends_on,omitempty"`
 	EventDeadline string `json:"event_deadline,omitempty"`
+	ReservedSeats int    `json:"reservedseats,omitempty"`
 }

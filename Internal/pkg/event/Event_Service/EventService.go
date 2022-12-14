@@ -8,7 +8,9 @@ import (
 type IEventService interface {
 	CreateEvent(eventmodel.EventUserInput) bool
 	FindEventByEventId(string) (eventmodel.EventModel, bool)
-	SaveEvent(*eventmodel.EventModel)
+	SaveEvent(*eventmodel.EventModel) *eventmodel.EventModel
+	EventEncoder(*eventmodel.EventModel, eventmodel.UpdateEventInput) (*eventmodel.EventModel, bool)
+	DeleteEvent(*eventmodel.EventModel) bool
 }
 
 type EventService struct {
@@ -39,4 +41,12 @@ func (eventService *EventService) FindEventByEventId(eventID string) (*eventmode
 
 func (eventService *EventService) SaveEvent(eventInput *eventmodel.EventModel) (*eventmodel.EventModel, bool) {
 	return eventService.EventRepo.SaveEvent(eventInput)
+}
+
+func (eventService *EventService) EventEncoder(event *eventmodel.EventModel, EventUpdateInput eventmodel.UpdateEventInput) (*eventmodel.EventModel, bool) {
+	return eventService.EventRepo.EventEncoder(event, EventUpdateInput)
+}
+
+func (eventService *EventService) DeleteEvent(event *eventmodel.EventModel) bool {
+	return eventService.EventRepo.DeleteEvent(event)
 }

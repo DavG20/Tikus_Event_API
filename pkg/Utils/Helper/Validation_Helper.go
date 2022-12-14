@@ -3,6 +3,7 @@ package helper
 import (
 	"errors"
 	"fmt"
+	"strconv"
 
 	authmodel "github.com/DavG20/Tikus_Event_Api/Internal/pkg/auth/Auth_Model"
 	"github.com/gin-gonic/gin"
@@ -42,4 +43,13 @@ func ShouldBindJSONHelper(context *gin.Context, jsonObject interface{}) []authmo
 	}
 	fmt.Println(jsonObject, "after")
 	return nil
+}
+
+func CheckEventId(evnetId string) bool {
+
+	_, err := strconv.Atoi(evnetId)
+	if err != nil {
+		return false
+	}
+	return true
 }

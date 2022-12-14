@@ -18,3 +18,9 @@ func ParseDateInput(eventBeginsOn, eventEndsOn, eventDeadline string) (eventBegi
 	return eventBeginsOnTimeFormat, eventEndsOnTimeFormat, eventDeadlineTimeFormat, nil
 
 }
+
+func SingleDateHelper(inputDate string) (returnsDate time.Time, err error) {
+	timeLayout := "2006-01-02T15:04:05.000Z"
+	returnsDate, err = time.Parse(timeLayout, inputDate)
+	return returnsDate, err
+}

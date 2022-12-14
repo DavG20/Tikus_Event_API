@@ -33,6 +33,9 @@ func (eventHandler *EventHandler) CreateEventHendler(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, gin.H{"message": "can't bind json"})
 		return
 	}
+	// lets get username from request
+	session, _ := eventHandler.cookieHandler.ValidateCookie(context)
+	userInput.UserName = session.UserName
 
 	// lets save the event
 	// createEvent method in repo will add the event in to the db and return the newly added event id
@@ -55,7 +58,7 @@ func (eventHandler *EventHandler) CreateEventHendler(context *gin.Context) {
 
 }
 
-func (eventHandler *EventHandler) UplaodEventProfilePic(context *gin.Context) {
+func (eventHandler *EventHandler) UploadEventProfilePic(context *gin.Context) {
 	responseMessage := authmodel.ResponseMessage{}
 
 	eventId := context.Request.FormValue("eventid")
@@ -112,7 +115,6 @@ func (eventHandler *EventHandler) UplaodEventProfilePic(context *gin.Context) {
 	// the profile name looks like username_eventid.png
 	// the name format helps us to find events profile easly
 	profilePath := helper.SaveProfileInFileSystem(file, session.UserName, eventId)
-	fmt.Println("finennnnnn", profilePath)
 
 	// Update event table
 	event.EventPicture = profilePath
@@ -146,5 +148,118 @@ func (eventHandeler *EventHandler) UpdateEventHandler(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, responseMessage)
 		return
 	}
-	fmt.Println("fine here")
+	// check if event is has the right format
+	isEventIdCorrect := helper.CheckEventId(EventUpdateInput.EventID)
+	if !isEventIdCorrect || EventUpdateInput.EventID == "" {
+		responseMessage.Message = "invalid event id , please use the correct event id"
+		responseMessage.Success = false
+		context.JSON(http.StatusBadRequest, responseMessage)
+		return
+	}
+	event, isEventExist := eventHandeler.eventService.FindEventByEventId(EventUpdateInput.EventID)
+	if !isEventExist {
+		responseMessage.Message = "No event found . check ur event id"
+		responseMessage.Success = false
+		context.JSON(http.StatusBadRequest, responseMessage)
+		return
+	}
+	// get Users username from request for the validity
+	sess, _ := eventHandeler.cookieHandler.ValidateCookie(context)
+	if event.UserName != sess.UserName {
+		responseMessage.Message = "you can't update this event,"
+		responseMessage.Success = false
+		context.JSON(http.StatusBadRequest, responseMessage)
+		return
+	}
+	// update the event
+	// check input params and set to event
+	encodedEvent, isEncoded := eventHandeler.eventService.EventEncoder(event, EventUpdateInput)
+	if !isEncoded {
+		responseMessage.Message = "failed to encode event input, please try again"
+		responseMessage.Success = false
+		context.JSON(http.StatusInternalServerError, responseMessage)
+		return
+	}
+
+	updatedEvent, isUpdated := eventHandeler.eventService.SaveEvent(encodedEvent)
+	if !isUpdated {
+		responseMessage.Message = "failed to save updated value"
+		responseMessage.Success = false
+		context.JSON(http.StatusInternalServerError, responseMessage)
+		return
+	}
+	context.JSON(http.StatusOK, updatedEvent)
+
+}
+
+func (eventHandler *EventHandler) DeleteEventHandler(context *gin.Context) {
+	responseMessage := authmodel.ResponseMessage{}
+	// get event is from request form value
+	eventId := context.Request.FormValue("eventid")
+	// check is event is is the string of number
+	isEventIdRight := helper.CheckEventId(eventId)
+	if eventId == "" || !isEventIdRight {
+		responseMessage.Message = "please inter the correct event id to delete"
+		responseMessage.Success = false
+		context.JSON(http.StatusBadRequest, responseMessage)
+		return
+	}
+	// lets get session  it helps to get user's username
+	session, _ := eventHandler.cookieHandler.ValidateCookie(context)
+
+	// get event by eventid if  eventid is is exist
+	event, isEventExist := eventHandler.eventService.FindEventByEventId(eventId)
+	if !isEventExist {
+		responseMessage.Message = "no event by this event id"
+		responseMessage.Success = false
+		context.JSON(http.StatusBadRequest, responseMessage)
+		return
+	}
+	// lets check is event is created by this user
+	if event.UserName != session.UserName {
+		responseMessage.Message = "you can't delete this event,"
+		responseMessage.Success = false
+		context.JSON(http.StatusUnauthorized, responseMessage)
+		return
+	}
+	profileName := session.UserName + "_" + eventId + ".png"
+	removeEventProfile := helper.RemoveProfileFromFileSystem(profileName)
+
+	isEventDeleted := eventHandler.eventService.DeleteEvent(event)
+	if !isEventDeleted || !removeEventProfile {
+		responseMessage.Message = "failed to delete event, internal server problem"
+		responseMessage.Success = false
+		context.JSON(http.StatusInternalServerError, responseMessage)
+		return
+	}
+	responseMessage.Message = "event deleted successfuly"
+	responseMessage.Success = false
+
+	context.JSON(http.StatusOK, responseMessage)
+
+}
+
+func (eventHandler *EventHandler) GetEventInfoHandler(context *gin.Context) {
+	responseMessage := authmodel.ResponseMessage{}
+	eventId := context.Request.FormValue("eventid")
+	isEventIdCorrect := helper.CheckEventId(eventId)
+	if eventId == "" || !isEventIdCorrect {
+		responseMessage.Message = "invalid event id"
+		responseMessage.Success = false
+		context.JSON(http.StatusBadRequest, responseMessage)
+		return
+	}
+	// get session from context
+	// session, _ := eventHandler.cookieHandler.ValidateCookie(context)
+	// lets get event if it exists
+	event, isEventExist := eventHandler.eventService.FindEventByEventId(eventId)
+	if !isEventExist {
+		responseMessage.Message = "No event found"
+		responseMessage.Success = false
+		context.JSON(http.StatusNotFound, responseMessage)
+		return
+	}
+
+	context.JSON(http.StatusOK, event)
+
 }

@@ -45,6 +45,7 @@ func init() {
 }
 
 func main() {
+
 	// auth part
 	authRepo := authrepo.NewAuth(Db)
 	authService := authservice.NewAuthService(authRepo)
@@ -76,9 +77,11 @@ func main() {
 	private.GET("forgotpassword", authHandler.ForgotPasswordHandler)
 
 	// event part
-	private.POST("event/createvent", eventHandler.CreateEventHendler)
-	private.POST("event/uploadeventpic", eventHandler.UplaodEventProfilePic)
-	private.POST("/event/update", eventHandler.UpdateEventHandler)
+	private.POST("event/createevent", eventHandler.CreateEventHendler)
+	private.POST("event/uploadeeventpic", eventHandler.UploadEventProfilePic)
+	private.POST("event/update", eventHandler.UpdateEventHandler)
+	private.POST("event/deleteevent", eventHandler.DeleteEventHandler)
+	private.GET("event/geteventinfo", eventHandler.GetEventInfoHandler)
 
 	router.Run(":8080")
 }
