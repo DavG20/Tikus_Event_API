@@ -223,10 +223,18 @@ func (eventHandler *EventHandler) DeleteEventHandler(context *gin.Context) {
 		return
 	}
 	profileName := session.UserName + "_" + eventId + ".png"
-	removeEventProfile := helper.RemoveProfileFromFileSystem(profileName)
 
+	if event.EventPicture != "" {
+		removeEventProfile := helper.RemoveProfileFromFileSystem(profileName)
+		if !removeEventProfile {
+			responseMessage.Message = "failed to delete event, internal server problem"
+			responseMessage.Success = false
+			context.JSON(http.StatusInternalServerError, responseMessage)
+			return
+		}
+	}
 	isEventDeleted := eventHandler.eventService.DeleteEvent(event)
-	if !isEventDeleted || !removeEventProfile {
+	if !isEventDeleted {
 		responseMessage.Message = "failed to delete event, internal server problem"
 		responseMessage.Success = false
 		context.JSON(http.StatusInternalServerError, responseMessage)
