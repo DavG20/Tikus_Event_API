@@ -6,11 +6,16 @@ import (
 	"sync"
 
 	api_handler "github.com/DavG20/Tikus_Event_Api/API/API_Handler"
+	apihandler "github.com/DavG20/Tikus_Event_Api/API/API_Handler"
 
 	authmodel "github.com/DavG20/Tikus_Event_Api/Internal/pkg/auth/Auth_Model"
 	authrepo "github.com/DavG20/Tikus_Event_Api/Internal/pkg/auth/Auth_Repo"
 	authservice "github.com/DavG20/Tikus_Event_Api/Internal/pkg/auth/Auth_Service"
+	"github.com/DavG20/Tikus_Event_Api/Internal/pkg/db"
 	DB "github.com/DavG20/Tikus_Event_Api/Internal/pkg/db"
+	registrationmodel "github.com/DavG20/Tikus_Event_Api/Internal/pkg/registration/Registration_Model"
+	registrationrepo "github.com/DavG20/Tikus_Event_Api/Internal/pkg/registration/Registration_Repo"
+	registrationservice "github.com/DavG20/Tikus_Event_Api/Internal/pkg/registration/Registration_Service"
 
 	eventrepo "github.com/DavG20/Tikus_Event_Api/Internal/pkg/event/Event_Repo"
 	eventService "github.com/DavG20/Tikus_Event_Api/Internal/pkg/event/Event_Service"
@@ -55,7 +60,15 @@ func main() {
 	eventRepo := eventrepo.NewEventRepo(Db)
 	eventService := eventService.NewEventService(eventRepo)
 	eventHandler := api_handler.NewEventHandler(eventService)
+
+	// regi
+	regiRepo := registrationrepo.NewRegRepo(Db)
+	regiService := registrationservice.NewRegiService(regiRepo)
+	regiHandler := apihandler.NewRegiHandler(regiService, eventService)
+
 	router = gin.Default()
+
+	db.DB.AutoMigrate(registrationmodel.RegModel{})
 
 	public := router.Group("/user")
 
@@ -68,20 +81,23 @@ func main() {
 	private.Use(authHandler.AuthRequired())
 	private.GET("/searchuser", authHandler.SearchUser)
 	private.POST("/logout", authHandler.LogoutHandler)
-	private.POST("/deleteaccount", authHandler.DeleteAccount)
+	private.DELETE("/deleteaccount", authHandler.DeleteAccount)
 	private.GET("/getuserinfo", authHandler.GetUserInfo)
-	private.POST("/changepassword", authHandler.ChangePasswordHandler)
-	private.POST("uploadprofile", authHandler.UploadProfileHandler)
-	private.GET("downloadprofile", authHandler.DownloadProfile)
-	private.POST("/deleteprofile", authHandler.DeleteProfilePic)
-	private.GET("forgotpassword", authHandler.ForgotPasswordHandler)
+	private.PUT("/changepassword", authHandler.ChangePasswordHandler)
+	private.PUT("/uploadprofile", authHandler.UploadProfileHandler)
+	private.GET("/downloadprofile", authHandler.DownloadProfile)
+	private.DELETE("/deleteprofile", authHandler.DeleteProfilePic)
+	private.GET("/forgotpassword", authHandler.ForgotPasswordHandler)
 
 	// event part
 	private.POST("event/createevent", eventHandler.CreateEventHendler)
-	private.POST("event/uploadeeventpic", eventHandler.UploadEventProfilePic)
-	private.POST("event/update", eventHandler.UpdateEventHandler)
-	private.POST("event/deleteevent", eventHandler.DeleteEventHandler)
+	private.PUT("event/uploadeeventpic", eventHandler.UploadEventProfilePic)
+	private.PUT("event/update", eventHandler.UpdateEventHandler)
+	private.DELETE("event/deleteevent", eventHandler.DeleteEventHandler)
 	private.GET("event/geteventinfo", eventHandler.GetEventInfoHandler)
+
+	// registration part
+	private.POST("regi/createregi", regiHandler.CreateRegiHandler)
 
 	router.Run(":8080")
 }
